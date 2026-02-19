@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Amsterdam Lane Swimming</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f0f4f8;
+      color: #1a202c;
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    header h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: #2b6cb0;
+      margin-bottom: 1rem;
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .nav button {
+      padding: 0.5rem 1.1rem;
+      border: 1px solid #cbd5e0;
+      border-radius: 6px;
+      background: #fff;
+      cursor: pointer;
+      font-size: 0.95rem;
+      transition: background 0.15s, border-color 0.15s;
+    }
+
+    .nav button:hover { background: #ebf8ff; border-color: #90cdf4; }
+    .nav button#btn-today { font-weight: 600; }
+
+    #date-label {
+      font-size: 1.05rem;
+      font-weight: 500;
+      color: #4a5568;
+      min-width: 14rem;
+      text-align: center;
+    }
+
+    #cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.25rem;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+      padding: 1.25rem 1.4rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+
+    .card-header a {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: #2b6cb0;
+      text-decoration: none;
+    }
+
+    .card-header a:hover { text-decoration: underline; }
+
+    .badge {
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 0.2rem 0.55rem;
+      border-radius: 99px;
+      white-space: nowrap;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      flex-shrink: 0;
+    }
+
+    .badge-live        { background: #c6f6d5; color: #276749; }
+    .badge-fallback    { background: #fefcbf; color: #744210; }
+    .badge-unavailable { background: #fed7d7; color: #742a2a; }
+
+    .slots { list-style: none; display: flex; flex-direction: column; gap: 0.35rem; }
+
+    .slots li {
+      font-size: 0.97rem;
+      font-variant-numeric: tabular-nums;
+      color: #2d3748;
+    }
+
+    .slots li::before { content: "✓ "; color: #38a169; }
+
+    .no-slots {
+      font-size: 0.95rem;
+      color: #718096;
+      font-style: italic;
+    }
+
+    .loading { text-align: center; color: #718096; font-size: 1rem; padding: 2rem; grid-column: 1/-1; }
+    .error   { text-align: center; color: #c53030; font-size: 0.95rem; grid-column: 1/-1; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Amsterdam Lane Swimming</h1>
+    <div class="nav">
+      <button id="btn-prev">← Prev</button>
+      <button id="btn-today">Today</button>
+      <button id="btn-next">Next →</button>
+      <span id="date-label"></span>
+    </div>
+  </header>
+
+  <div id="cards"></div>
+
+  <script>
+  (function () {
+    var currentDate = new Date();
+    currentDate.setHours(0, 0, 0, 0);
+
+    function isoDate(d) {
+      var y = d.getFullYear();
+      var m = String(d.getMonth() + 1).padStart(2, "0");
+      var day = String(d.getDate()).padStart(2, "0");
+      return y + "-" + m + "-" + day;
+    }
+
+    function formatLabel(d) {
+      return d.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+    }
+
+    function renderLoading() {
+      document.getElementById("cards").innerHTML = '<p class="loading">Loading schedules…</p>';
+    }
+
+    function renderError(msg) {
+      document.getElementById("cards").innerHTML = '<p class="error">Error: ' + escHtml(msg) + '</p>';
+    }
+
+    function escHtml(s) {
+      return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    }
+
+    function badgeClass(source) {
+      if (source === "live")        return "badge badge-live";
+      if (source === "fallback")    return "badge badge-fallback";
+      return "badge badge-unavailable";
+    }
+
+    function badgeLabel(source) {
+      if (source === "live")        return "live";
+      if (source === "fallback")    return "fallback";
+      return "unavailable";
+    }
+
+    function renderCards(data) {
+      var html = "";
+      data.pools.forEach(function (pool) {
+        var slotsHtml;
+        if (pool.slots.length > 0) {
+          slotsHtml = '<ul class="slots">' +
+            pool.slots.map(function (s) {
+              return "<li>" + escHtml(s.start) + " – " + escHtml(s.end) + "</li>";
+            }).join("") +
+            "</ul>";
+        } else {
+          slotsHtml = '<p class="no-slots">No lane swimming today</p>';
+        }
+        html += '<div class="card">' +
+          '<div class="card-header">' +
+            '<a href="' + escHtml(pool.url) + '" target="_blank" rel="noopener">' + escHtml(pool.name) + '</a>' +
+            '<span class="' + badgeClass(pool.source) + '">' + badgeLabel(pool.source) + '</span>' +
+          '</div>' +
+          slotsHtml +
+          '</div>';
+      });
+      document.getElementById("cards").innerHTML = html;
+    }
+
+    function loadSlots() {
+      document.getElementById("date-label").textContent = formatLabel(currentDate);
+      renderLoading();
+      fetch("/api/slots?date=" + isoDate(currentDate))
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (data.error) { renderError(data.error); return; }
+          renderCards(data);
+        })
+        .catch(function (err) { renderError(err.message || "Network error"); });
+    }
+
+    document.getElementById("btn-prev").addEventListener("click", function () {
+      currentDate = new Date(currentDate.getTime() - 86400000);
+      loadSlots();
+    });
+
+    document.getElementById("btn-today").addEventListener("click", function () {
+      currentDate = new Date();
+      currentDate.setHours(0, 0, 0, 0);
+      loadSlots();
+    });
+
+    document.getElementById("btn-next").addEventListener("click", function () {
+      currentDate = new Date(currentDate.getTime() + 86400000);
+      loadSlots();
+    });
+
+    loadSlots();
+  }());
+  </script>
+</body>
+</html>
