@@ -1,97 +1,54 @@
 """
-Scrapes De Mirandabad's lane swimming schedule from ikwilalleenmaarzwemmen.nl,
-an Amsterdam pool aggregator that fetches times daily.
+Scrapes De Mirandabad's lane swimming schedule from the official
+Amsterdam zwembaden API: https://zwembaden.api-amsterdam.nl/
 
-Page structure:
-  - div.days: text list of day labels ("do 19 februari", "vr 20 februari", ...)
-  - div.day (multiple, one per day shown): contains div.pool-list-item entries
-    Each item has: "<time> | <activity> | @<pool>"
+Discovered by reverse-engineering the Vue.js SPA embedded in
+https://www.amsterdam.nl/demirandabad/activiteiten/banenzwemmen/
 
-Fallback: none — Mirandabad's schedule changes every week, so a static
-fallback would mislead. When scraping fails the user is directed to the URL.
+API endpoint: GET /nl/api/de-mirandabad/date/{YYYY-MM-DD}/
+Returns JSON: {"pool": "...", "schedule": [{"activity", "start", "end", "extra", "dow"}, ...]}
+Times are in Dutch decimal format: "7.00", "12.00", "21.45" (dot separator, not colon).
+
+Fallback: none — schedule changes weekly, no reliable static fallback.
 """
-import re
-from datetime import date
+from datetime import date, time
 from typing import List, Optional
 
-import requests
-from bs4 import BeautifulSoup
+import primp
 
-from .base import PoolChecker, Slot, _t
+from .base import PoolChecker, Slot
 
-_HEADERS = {
-    "User-Agent": (
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
-        "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
-    ),
-    "Accept-Language": "nl-NL,nl;q=0.9",
-}
+_API_BASE = "https://zwembaden.api-amsterdam.nl/nl/api/de-mirandabad"
 
-_NL_MONTHS = {
-    1: "januari", 2: "februari", 3: "maart", 4: "april", 5: "mei", 6: "juni",
-    7: "juli", 8: "augustus", 9: "september", 10: "oktober",
-    11: "november", 12: "december",
-}
 
-# Dutch weekday abbreviations for matching day labels
-_NL_DAYS_ABBR = {0: "ma", 1: "di", 2: "wo", 3: "do", 4: "vr", 5: "za", 6: "zo"}
-
-_TIME_RE = re.compile(r"(\d{1,2}:\d{2})\s*[-–]\s*(\d{1,2}:\d{2})")
+def _parse_dutch_time(s: str) -> time:
+    """Parse Dutch decimal time like '7.00' or '21.45' into a time object."""
+    h, m = s.strip().split(".")
+    return time(int(h), int(m))
 
 
 class MirandabadChecker(PoolChecker):
     name = "De Mirandabad"
     url = "https://www.amsterdam.nl/demirandabad/activiteiten/banenzwemmen/"
-    _agg_url = "https://ikwilalleenmaarzwemmen.nl/"
 
-    # No reliable static fallback — schedule changes weekly
+    # Schedule changes weekly — no reliable static fallback
     FALLBACK = {}
 
     def fetch_live(self, d: date) -> Optional[List[Slot]]:
-        resp = requests.get(self._agg_url, headers=_HEADERS, timeout=12)
-        resp.raise_for_status()
-        return self._parse(resp.text, d)
-
-    def _parse(self, html: str, d: date) -> Optional[List[Slot]]:
-        soup = BeautifulSoup(html, "lxml")
-
-        # Build the Dutch date label to look for, e.g. "do 19 februari"
-        day_abbr = _NL_DAYS_ABBR[d.weekday()]
-        month_name = _NL_MONTHS[d.month]
-        date_label = f"{day_abbr} {d.day} {month_name}"  # e.g. "do 19 februari"
-
-        # Find the index of our target date within div.days
-        days_container = soup.find("div", class_="days")
-        if not days_container:
-            return None
-
-        day_labels = [t.strip().lower() for t in days_container.stripped_strings]
-        try:
-            day_index = next(
-                i for i, lbl in enumerate(day_labels) if date_label in lbl
-            )
-        except StopIteration:
-            return None
-
-        # Get the corresponding div.day at that index
-        day_divs = soup.find_all("div", class_="day")
-        if day_index >= len(day_divs):
-            return None
-
-        target_day_div = day_divs[day_index]
-
-        # Within that day, find pool-list-items for Mirandabad + Banenzwemmen.
-        # Return [] (not None) when the day section is found — empty means
-        # "no lane swimming today", not "couldn't fetch".
+        client = primp.Client(impersonate="chrome_120")
+        resp = client.get(f"{_API_BASE}/date/{d.isoformat()}/")
+        if resp.status_code != 200:
+            raise RuntimeError(f"API returned {resp.status_code}")
+        data = resp.json()
         slots = []
-        for item in target_day_div.find_all("div", class_="pool-list-item"):
-            text = item.get_text(separator=" | ", strip=True)
-            if "Mirandabad" not in text:
+        for entry in data.get("schedule", []):
+            if "banen" not in entry.get("activity", "").lower():
                 continue
-            if "banen" not in text.lower():
-                continue
-            m = _TIME_RE.search(text)
-            if m:
-                slots.append(Slot(start=_t(m.group(1)), end=_t(m.group(2))))
-
+            try:
+                slots.append(Slot(
+                    start=_parse_dutch_time(entry["start"]),
+                    end=_parse_dutch_time(entry["end"]),
+                ))
+            except (KeyError, ValueError):
+                pass
         return slots
