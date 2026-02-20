@@ -3,3 +3,4 @@ beautifulsoup4
 lxml
 primp
 flask
+gunicorn
