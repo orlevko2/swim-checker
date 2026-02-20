@@ -9,120 +9,259 @@
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #f0f4f8;
+      background: #f7f8fc;
       color: #1a202c;
       min-height: 100vh;
-      padding: 2rem 1rem;
+      padding: 2rem 1rem 3rem;
     }
 
-    header {
-      text-align: center;
-      margin-bottom: 2rem;
-    }
+    header { text-align: center; margin-bottom: 1.75rem; }
 
-    header h1 {
-      font-size: 1.75rem;
-      font-weight: 700;
-      color: #2b6cb0;
-      margin-bottom: 1rem;
-    }
+    h1 { font-size: 1.6rem; font-weight: 700; color: #1e40af; margin-bottom: 1rem; }
 
     .nav {
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 0.75rem;
+      gap: 0.6rem;
       flex-wrap: wrap;
     }
 
     .nav button {
-      padding: 0.5rem 1.1rem;
+      padding: 0.45rem 1rem;
       border: 1px solid #cbd5e0;
       border-radius: 6px;
       background: #fff;
       cursor: pointer;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       transition: background 0.15s, border-color 0.15s;
     }
-
-    .nav button:hover { background: #ebf8ff; border-color: #90cdf4; }
-    .nav button#btn-today { font-weight: 600; }
+    .nav button:hover { background: #eff6ff; border-color: #93c5fd; }
+    #btn-today { font-weight: 600; }
 
     #date-label {
-      font-size: 1.05rem;
+      font-size: 1rem;
       font-weight: 500;
       color: #4a5568;
       min-width: 14rem;
       text-align: center;
     }
 
+    .main {
+      max-width: 980px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    /* ─── Now bar ─── */
+    .now-bar {
+      border-radius: 10px;
+      padding: 0.75rem 1.1rem;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+    }
+    .now-bar-active {
+      background: #d1fae5;
+      color: #064e3b;
+      border: 1px solid #6ee7b7;
+    }
+    .now-bar-idle {
+      background: #f1f5f9;
+      color: #475569;
+      border: 1px solid #e2e8f0;
+    }
+    .now-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .now-bar-active .now-dot { background: #10b981; box-shadow: 0 0 0 3px #a7f3d0; }
+    .now-bar-idle   .now-dot { background: #94a3b8; }
+    .now-pool-tag {
+      font-weight: 600;
+    }
+    .now-until { font-weight: 400; opacity: 0.8; }
+    .now-sep { opacity: 0.4; }
+    .now-next { font-style: italic; opacity: 0.75; }
+
+    /* ─── Filter bar ─── */
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .filter-label {
+      font-size: 0.82rem;
+      color: #64748b;
+      font-weight: 500;
+      margin-right: 0.1rem;
+    }
+    .filter-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.3rem 0.75rem;
+      border-radius: 99px;
+      border: 2px solid transparent;
+      background: #fff;
+      cursor: pointer;
+      font-size: 0.82rem;
+      font-weight: 600;
+      transition: opacity 0.15s, background 0.15s;
+    }
+    .filter-btn .filter-swatch {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .filter-btn.off {
+      opacity: 0.4;
+      text-decoration: line-through;
+    }
+
+    /* ─── Calendar ─── */
+    .cal-wrap {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.09);
+      overflow: hidden;
+    }
+
+    .cal-headers { display: flex; border-bottom: 2px solid #e2e8f0; }
+    .cal-gutter-head { flex-shrink: 0; background: #f8fafc; }
+    .cal-col-head {
+      flex: 1;
+      padding: 0.65rem 0.5rem 0.55rem;
+      text-align: center;
+      border-left: 1px solid #e2e8f0;
+      background: #f8fafc;
+      min-width: 0;
+    }
+    .cal-col-head a {
+      font-size: 0.83rem;
+      font-weight: 600;
+      color: #1e40af;
+      text-decoration: none;
+      display: block;
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .cal-col-head a:hover { text-decoration: underline; }
+
+    .cal-body { display: flex; }
+    .cal-time-col { flex-shrink: 0; position: relative; }
+    .cal-hour-label {
+      position: absolute;
+      right: 6px;
+      font-size: 0.65rem;
+      color: #a0aec0;
+      transform: translateY(-50%);
+      user-select: none;
+    }
+
+    .cal-pools { flex: 1; display: flex; position: relative; }
+    .cal-pool-col { flex: 1; position: relative; border-left: 1px solid #e2e8f0; min-width: 0; }
+
+    .cal-hline { position: absolute; left: 0; right: 0; pointer-events: none; }
+    .cal-hline.full { border-top: 1px solid #e8edf3; }
+    .cal-hline.half { border-top: 1px dashed #f0f4f8; }
+
+    .cal-slot {
+      position: absolute;
+      left: 4px; right: 4px;
+      border-radius: 5px;
+      color: #fff;
+      font-size: 0.68rem;
+      padding: 3px 5px;
+      overflow: hidden;
+      cursor: default;
+      transition: filter 0.15s;
+    }
+    .cal-slot:hover { filter: brightness(1.1); }
+    .cal-slot .slot-label { font-weight: 600; white-space: nowrap; }
+    .cal-slot .slot-sub   { opacity: 0.82; font-size: 0.62rem; }
+
+    /* Fallback slots get a hatched appearance */
+    .cal-slot.fallback { opacity: 0.7; }
+
+    /* Current-time red line */
+    .cal-now {
+      position: absolute;
+      left: 0; right: 0;
+      border-top: 2px solid #ef4444;
+      pointer-events: none;
+      z-index: 5;
+    }
+    .cal-now::before {
+      content: "";
+      position: absolute;
+      left: -4px; top: -4px;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: #ef4444;
+    }
+
+    /* ─── Badges ─── */
+    .badge {
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 0.15rem 0.45rem;
+      border-radius: 99px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      white-space: nowrap;
+    }
+    .badge-live        { background: #d1fae5; color: #065f46; }
+    .badge-fallback    { background: #fef3c7; color: #78350f; }
+    .badge-unavailable { background: #fee2e2; color: #7f1d1d; }
+
+    /* ─── Cards ─── */
     #cards {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 1.25rem;
-      max-width: 1000px;
-      margin: 0 auto;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
     }
 
     .card {
       background: #fff;
       border-radius: 10px;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
-      padding: 1.25rem 1.4rem;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.09);
+      padding: 1rem 1.15rem;
       display: flex;
       flex-direction: column;
-      gap: 0.75rem;
+      gap: 0.55rem;
+      border-top: 3px solid transparent;
     }
-
     .card-header {
       display: flex;
       align-items: flex-start;
       justify-content: space-between;
       gap: 0.5rem;
     }
-
     .card-header a {
-      font-size: 1.05rem;
+      font-size: 0.95rem;
       font-weight: 600;
-      color: #2b6cb0;
+      color: #1e3a8a;
       text-decoration: none;
     }
-
     .card-header a:hover { text-decoration: underline; }
 
-    .badge {
-      font-size: 0.72rem;
-      font-weight: 600;
-      padding: 0.2rem 0.55rem;
-      border-radius: 99px;
-      white-space: nowrap;
-      text-transform: uppercase;
-      letter-spacing: 0.03em;
-      flex-shrink: 0;
-    }
+    .slots { list-style: none; display: flex; flex-direction: column; gap: 0.28rem; }
+    .slots li { font-size: 0.88rem; font-variant-numeric: tabular-nums; color: #374151; }
+    .slots li::before { content: "✓ "; color: #10b981; }
 
-    .badge-live        { background: #c6f6d5; color: #276749; }
-    .badge-fallback    { background: #fefcbf; color: #744210; }
-    .badge-unavailable { background: #fed7d7; color: #742a2a; }
+    .no-slots { font-size: 0.86rem; color: #9ca3af; font-style: italic; }
 
-    .slots { list-style: none; display: flex; flex-direction: column; gap: 0.35rem; }
-
-    .slots li {
-      font-size: 0.97rem;
-      font-variant-numeric: tabular-nums;
-      color: #2d3748;
-    }
-
-    .slots li::before { content: "✓ "; color: #38a169; }
-
-    .no-slots {
-      font-size: 0.95rem;
-      color: #718096;
-      font-style: italic;
-    }
-
-    .loading { text-align: center; color: #718096; font-size: 1rem; padding: 2rem; grid-column: 1/-1; }
-    .error   { text-align: center; color: #c53030; font-size: 0.95rem; grid-column: 1/-1; }
+    .loading { text-align: center; color: #9ca3af; font-size: 1rem; padding: 3rem; }
+    .error   { text-align: center; color: #dc2626; font-size: 0.95rem; padding: 2rem; }
   </style>
 </head>
 <body>
@@ -136,72 +275,269 @@
     </div>
   </header>
 
-  <div id="cards"></div>
+  <div class="main">
+    <div id="now-bar" hidden></div>
+    <div id="filter-bar" class="filter-bar" hidden></div>
+    <div class="cal-wrap" id="cal-wrap"><p class="loading">Loading…</p></div>
+    <div id="cards"></div>
+  </div>
 
   <script>
   (function () {
+    var HOUR_START  = 6;
+    var HOUR_END    = 22;
+    var HOUR_PX     = 58;
+    var GUTTER_PX   = 44;
+    var TOTAL_H     = (HOUR_END - HOUR_START) * HOUR_PX;
+
+    // Per-pool accent colors (index matches POOLS order in app.py)
+    var POOL_COLORS = ["#2563eb", "#7c3aed", "#0891b2", "#16a34a"];
+
     var currentDate = new Date();
     currentDate.setHours(0, 0, 0, 0);
 
+    var filteredOut = {};   // poolName -> true when hidden
+    var lastData    = null; // cached last API response
+
+    /* ── Utilities ── */
     function isoDate(d) {
-      var y = d.getFullYear();
-      var m = String(d.getMonth() + 1).padStart(2, "0");
-      var day = String(d.getDate()).padStart(2, "0");
-      return y + "-" + m + "-" + day;
+      return d.getFullYear() + "-" +
+        String(d.getMonth() + 1).padStart(2, "0") + "-" +
+        String(d.getDate()).padStart(2, "0");
     }
 
     function formatLabel(d) {
-      return d.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+      return d.toLocaleDateString("en-GB", {
+        weekday: "long", day: "numeric", month: "long", year: "numeric"
+      });
     }
 
-    function renderLoading() {
-      document.getElementById("cards").innerHTML = '<p class="loading">Loading schedules…</p>';
-    }
-
-    function renderError(msg) {
-      document.getElementById("cards").innerHTML = '<p class="error">Error: ' + escHtml(msg) + '</p>';
-    }
-
-    function escHtml(s) {
+    function esc(s) {
       return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
     }
 
-    function badgeClass(source) {
-      if (source === "live")        return "badge badge-live";
-      if (source === "fallback")    return "badge badge-fallback";
-      return "badge badge-unavailable";
+    function toMin(hhmm) {
+      var p = hhmm.split(":");
+      return parseInt(p[0], 10) * 60 + parseInt(p[1], 10);
     }
 
-    function badgeLabel(source) {
-      if (source === "live")        return "live";
-      if (source === "fallback")    return "fallback";
-      return "unavailable";
+    function toPx(minutes) {
+      return ((minutes - HOUR_START * 60) / 60) * HOUR_PX;
     }
 
-    function renderCards(data) {
-      var html = "";
-      data.pools.forEach(function (pool) {
-        var slotsHtml;
-        if (pool.slots.length > 0) {
-          slotsHtml = '<ul class="slots">' +
-            pool.slots.map(function (s) {
-              return "<li>" + escHtml(s.start) + " – " + escHtml(s.end) + "</li>";
-            }).join("") +
-            "</ul>";
-        } else {
-          slotsHtml = '<p class="no-slots">No lane swimming today</p>';
+    function badgeCls(src) {
+      return "badge badge-" + (src === "live" || src === "fallback" ? src : "unavailable");
+    }
+    function badgeTxt(src) {
+      return src === "live" ? "live" : src === "fallback" ? "fallback" : "unavailable";
+    }
+
+    function colorFor(idx) {
+      return POOL_COLORS[idx % POOL_COLORS.length];
+    }
+
+    /* ── Now bar ── */
+    function buildNowBar(pools) {
+      var bar = document.getElementById("now-bar");
+      if (isoDate(currentDate) !== isoDate(new Date())) {
+        bar.hidden = true;
+        return;
+      }
+
+      var now    = new Date();
+      var nowMin = now.getHours() * 60 + now.getMinutes();
+
+      var active   = [];
+      var upcoming = [];
+
+      pools.forEach(function (pool, idx) {
+        pool.slots.forEach(function (slot) {
+          var s = toMin(slot.start), e = toMin(slot.end);
+          if (nowMin >= s && nowMin < e) {
+            active.push({ pool: pool, slot: slot, idx: idx });
+          } else if (s > nowMin) {
+            upcoming.push({ pool: pool, slot: slot, startMin: s, idx: idx });
+          }
+        });
+      });
+      upcoming.sort(function (a, b) { return a.startMin - b.startMin; });
+
+      var html;
+      if (active.length > 0) {
+        bar.className = "now-bar now-bar-active";
+        html = '<span class="now-dot"></span><strong>Lane swimming open now:&nbsp;</strong>';
+        html += active.map(function (a) {
+          var c = colorFor(a.idx);
+          return '<span class="now-pool-tag" style="color:' + c + '">' + esc(a.pool.name) + '</span>'
+               + '<span class="now-until"> until ' + esc(a.slot.end) + '</span>';
+        }).join('<span class="now-sep"> &nbsp;·&nbsp; </span>');
+      } else {
+        bar.className = "now-bar now-bar-idle";
+        html = '<span class="now-dot"></span><strong>No lane swimming right now</strong>';
+        if (upcoming.length > 0) {
+          var nx = upcoming[0];
+          var c  = colorFor(nx.idx);
+          html += ' &nbsp;·&nbsp; <span class="now-next">Next: '
+                + '<span style="color:' + c + ';font-weight:600">' + esc(nx.pool.name) + '</span>'
+                + ' at ' + esc(nx.slot.start) + '</span>';
         }
-        html += '<div class="card">' +
-          '<div class="card-header">' +
-            '<a href="' + escHtml(pool.url) + '" target="_blank" rel="noopener">' + escHtml(pool.name) + '</a>' +
-            '<span class="' + badgeClass(pool.source) + '">' + badgeLabel(pool.source) + '</span>' +
-          '</div>' +
-          slotsHtml +
-          '</div>';
+      }
+
+      bar.innerHTML = html;
+      bar.hidden = false;
+    }
+
+    /* ── Filter bar ── */
+    function buildFilterBar(pools) {
+      var bar = document.getElementById("filter-bar");
+
+      var html = '<span class="filter-label">Show:</span>';
+      pools.forEach(function (pool, idx) {
+        var c = colorFor(idx);
+        html += '<button class="filter-btn" data-filter-pool="' + esc(pool.name) + '" style="border-color:' + c + ';color:' + c + '">'
+              + '<span class="filter-swatch" style="background:' + c + '"></span>'
+              + esc(pool.name)
+              + '</button>';
+      });
+      bar.innerHTML = html;
+      bar.hidden = false;
+
+      bar.querySelectorAll(".filter-btn").forEach(function (btn) {
+        // Restore prior state if pool already had a filter
+        if (filteredOut[btn.dataset.filterPool]) btn.classList.add("off");
+
+        btn.addEventListener("click", function () {
+          var name = btn.dataset.filterPool;
+          if (filteredOut[name]) {
+            delete filteredOut[name];
+          } else {
+            filteredOut[name] = true;
+          }
+          btn.classList.toggle("off");
+          applyFilters();
+        });
+      });
+
+      applyFilters();
+    }
+
+    function applyFilters() {
+      // Calendar header cells and body columns share data-pool attribute
+      document.querySelectorAll("[data-pool]").forEach(function (el) {
+        el.style.display = filteredOut[el.dataset.pool] ? "none" : "";
+      });
+    }
+
+    /* ── Calendar ── */
+    function buildCalendar(pools) {
+      // Headers
+      var hdr = '<div class="cal-headers">'
+        + '<div class="cal-gutter-head" style="width:' + GUTTER_PX + 'px"></div>';
+      pools.forEach(function (pool, idx) {
+        var c = colorFor(idx);
+        hdr += '<div class="cal-col-head" data-pool="' + esc(pool.name) + '">'
+             + '<a href="' + esc(pool.url) + '" target="_blank" rel="noopener" style="color:' + c + '">' + esc(pool.name) + '</a>'
+             + '<span class="' + badgeCls(pool.source) + '">' + badgeTxt(pool.source) + '</span>'
+             + '</div>';
+      });
+      hdr += '</div>';
+
+      // Time gutter
+      var gutter = '<div class="cal-time-col" style="width:' + GUTTER_PX + 'px;height:' + TOTAL_H + 'px">';
+      for (var h = HOUR_START; h <= HOUR_END; h++) {
+        var tp = toPx(h * 60);
+        gutter += '<span class="cal-hour-label" style="top:' + tp + 'px">'
+                + String(h).padStart(2, "0") + ':00</span>';
+      }
+      gutter += '</div>';
+
+      // Pool columns
+      var poolsDiv = '<div class="cal-pools" style="height:' + TOTAL_H + 'px">';
+      pools.forEach(function (pool, idx) {
+        var c = colorFor(idx);
+        var col = '<div class="cal-pool-col" data-pool="' + esc(pool.name) + '">';
+
+        // Grid lines
+        for (var h2 = HOUR_START; h2 <= HOUR_END; h2++) {
+          var lp = toPx(h2 * 60);
+          col += '<div class="cal-hline full" style="top:' + lp + 'px"></div>';
+          if (h2 < HOUR_END) {
+            col += '<div class="cal-hline half" style="top:' + (lp + HOUR_PX / 2) + 'px"></div>';
+          }
+        }
+
+        // Swim slots
+        pool.slots.forEach(function (slot) {
+          var startMin = toMin(slot.start);
+          var endMin   = toMin(slot.end);
+          var top    = toPx(startMin);
+          var height = Math.max(((endMin - startMin) / 60) * HOUR_PX, 22);
+          var durH   = ((endMin - startMin) / 60).toFixed(1).replace(/\.0$/, "") + "h";
+          var fb     = pool.source !== "live" ? " fallback" : "";
+          col += '<div class="cal-slot' + fb + '" style="top:' + top + 'px;height:' + height + 'px;background:' + c + '"'
+               + ' title="' + esc(pool.name) + ' ' + esc(slot.start) + '–' + esc(slot.end) + '">'
+               + '<span class="slot-label">' + esc(slot.start) + '–' + esc(slot.end) + '</span>';
+          if (height >= 36) {
+            col += '<span class="slot-sub">' + durH + '</span>';
+          }
+          col += '</div>';
+        });
+
+        col += '</div>';
+        poolsDiv += col;
+      });
+
+      // Current-time indicator (today only)
+      if (isoDate(currentDate) === isoDate(new Date())) {
+        var now   = new Date();
+        var nowPx = toPx(now.getHours() * 60 + now.getMinutes());
+        if (nowPx >= 0 && nowPx <= TOTAL_H) {
+          poolsDiv += '<div class="cal-now" style="top:' + nowPx + 'px"></div>';
+        }
+      }
+
+      poolsDiv += '</div>';
+      document.getElementById("cal-wrap").innerHTML =
+        hdr + '<div class="cal-body">' + gutter + poolsDiv + '</div>';
+    }
+
+    /* ── Cards ── */
+    function buildCards(pools) {
+      var html = "";
+      pools.forEach(function (pool, idx) {
+        var c = colorFor(idx);
+        var slotsHtml = pool.slots.length
+          ? '<ul class="slots">' + pool.slots.map(function (s) {
+              return "<li>" + esc(s.start) + " – " + esc(s.end) + "</li>";
+            }).join("") + "</ul>"
+          : '<p class="no-slots">No lane swimming today</p>';
+
+        html += '<div class="card" data-pool="' + esc(pool.name) + '" style="border-top-color:' + c + '">'
+              + '<div class="card-header">'
+              +   '<a href="' + esc(pool.url) + '" target="_blank" rel="noopener" style="color:' + c + '">' + esc(pool.name) + '</a>'
+              +   '<span class="' + badgeCls(pool.source) + '">' + badgeTxt(pool.source) + '</span>'
+              + '</div>'
+              + slotsHtml
+              + '</div>';
       });
       document.getElementById("cards").innerHTML = html;
     }
 
+    /* ── Helpers ── */
+    function renderLoading() {
+      document.getElementById("cal-wrap").innerHTML = '<p class="loading">Loading schedules…</p>';
+      document.getElementById("cards").innerHTML = "";
+      document.getElementById("now-bar").hidden = true;
+      document.getElementById("filter-bar").hidden = true;
+    }
+
+    function renderError(msg) {
+      document.getElementById("cal-wrap").innerHTML = '<p class="error">Error: ' + esc(msg) + '</p>';
+      document.getElementById("cards").innerHTML = "";
+      document.getElementById("now-bar").hidden = true;
+    }
+
+    /* ── Load ── */
     function loadSlots() {
       document.getElementById("date-label").textContent = formatLabel(currentDate);
       renderLoading();
@@ -209,22 +545,26 @@
         .then(function (r) { return r.json(); })
         .then(function (data) {
           if (data.error) { renderError(data.error); return; }
-          renderCards(data);
+          lastData = data;
+          buildNowBar(data.pools);
+          buildFilterBar(data.pools);
+          buildCalendar(data.pools);
+          buildCards(data.pools);
+          applyFilters();
         })
         .catch(function (err) { renderError(err.message || "Network error"); });
     }
 
+    /* ── Nav ── */
     document.getElementById("btn-prev").addEventListener("click", function () {
       currentDate = new Date(currentDate.getTime() - 86400000);
       loadSlots();
     });
-
     document.getElementById("btn-today").addEventListener("click", function () {
       currentDate = new Date();
       currentDate.setHours(0, 0, 0, 0);
       loadSlots();
     });
-
     document.getElementById("btn-next").addEventListener("click", function () {
       currentDate = new Date(currentDate.getTime() + 86400000);
       loadSlots();

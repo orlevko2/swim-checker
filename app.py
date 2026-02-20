@@ -8,10 +8,11 @@ from flask import Flask, jsonify, render_template, request
 from pools.mirandabad import MirandabadChecker
 from pools.mercator import MercatorChecker
 from pools.meerkamp import MeerkampChecker
+from pools.zuiderbad import ZuiderbadChecker
 
 app = Flask(__name__)
 
-POOLS = [MirandabadChecker(), MercatorChecker(), MeerkampChecker()]
+POOLS = [MirandabadChecker(), MercatorChecker(), MeerkampChecker(), ZuiderbadChecker()]
 
 
 def fetch_pool(pool, d: date) -> dict:

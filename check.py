@@ -14,8 +14,9 @@ from datetime import date, timedelta
 from pools.mirandabad import MirandabadChecker
 from pools.mercator import MercatorChecker
 from pools.meerkamp import MeerkampChecker
+from pools.zuiderbad import ZuiderbadChecker
 
-POOLS = [MirandabadChecker(), MercatorChecker(), MeerkampChecker()]
+POOLS = [MirandabadChecker(), MercatorChecker(), MeerkampChecker(), ZuiderbadChecker()]
 BAR = "─" * 50
 
 
