@@ -3,153 +3,233 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Amsterdam Lane Swimming</title>
+  <title>Swimfinder</title>
   <style>
+    /* ─── Design tokens ─── */
+    :root {
+      --bg:           #eef2f9;
+      --surface:      #ffffff;
+      --surface-2:    #f5f8fc;
+      --border:       #e2e8f0;
+      --border-2:     #cdd5e0;
+      --text-1:       #0f172a;
+      --text-2:       #475569;
+      --text-3:       #94a3b8;
+      --blue:         #1d4ed8;
+      --blue-pale:    #dbeafe;
+      --green:        #059669;
+      --green-pale:   #d1fae5;
+      --amber:        #b45309;
+      --amber-pale:   #fef3c7;
+      --red:          #dc2626;
+      --red-pale:     #fee2e2;
+      --r-lg:         14px;
+      --r:            10px;
+      --r-sm:         7px;
+      --shadow-sm:    0 1px 2px rgba(15,23,42,.06), 0 1px 3px rgba(15,23,42,.04);
+      --shadow:       0 4px 12px rgba(15,23,42,.08), 0 2px 4px rgba(15,23,42,.04);
+      --font:         -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    }
+
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #f7f8fc;
-      color: #1a202c;
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text-1);
       min-height: 100vh;
-      padding: 2rem 1rem 3rem;
     }
 
-    header { text-align: center; margin-bottom: 1.75rem; }
+    /* ─── Skip link (keyboard a11y) ─── */
+    .skip-link {
+      position: absolute;
+      top: -100%;
+      left: 1rem;
+      padding: 0.5rem 1rem;
+      background: var(--blue);
+      color: #fff;
+      border-radius: 0 0 var(--r-sm) var(--r-sm);
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-decoration: none;
+      z-index: 100;
+      transition: top 0.15s;
+    }
+    .skip-link:focus { top: 0; outline: 2px solid #fff; outline-offset: 2px; }
 
-    h1 { font-size: 1.6rem; font-weight: 700; color: #1e40af; margin-bottom: 1rem; }
-
-    .nav {
+    /* ─── App bar (sticky) ─── */
+    .app-bar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0.85rem 1.5rem;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      box-shadow: var(--shadow-sm);
+    }
+    .app-bar-inner {
+      max-width: 1000px;
+      margin: 0 auto;
       display: flex;
       align-items: center;
-      justify-content: center;
-      gap: 0.6rem;
+      gap: 1rem;
       flex-wrap: wrap;
     }
-
-    .nav button {
-      padding: 0.45rem 1rem;
-      border: 1px solid #cbd5e0;
-      border-radius: 6px;
-      background: #fff;
-      cursor: pointer;
-      font-size: 0.9rem;
-      transition: background 0.15s, border-color 0.15s;
+    .app-title {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
     }
-    .nav button:hover { background: #eff6ff; border-color: #93c5fd; }
-    #btn-today { font-weight: 600; }
+    .app-title-icon { font-size: 1.2rem; line-height: 1; }
+    .app-title h1 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--blue);
+      letter-spacing: -0.02em;
+      white-space: nowrap;
+    }
 
+    /* Date navigation */
+    .date-nav {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      margin-left: auto;
+      flex-wrap: wrap;
+    }
     #date-label {
-      font-size: 1rem;
-      font-weight: 500;
-      color: #4a5568;
-      min-width: 14rem;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text-1);
+      min-width: 15rem;
       text-align: center;
     }
 
+    /* Shared button base */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      cursor: pointer;
+      color: var(--text-2);
+      font-family: inherit;
+      font-size: 0.85rem;
+      transition: background 0.12s, border-color 0.12s, color 0.12s;
+      white-space: nowrap;
+    }
+    .btn:hover        { background: var(--blue-pale); border-color: #93c5fd; color: var(--blue); }
+    .btn:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+
+    .btn-icon { width: 34px; height: 34px; border-radius: var(--r-sm); font-size: 1rem; }
+    .btn-text { height: 34px; padding: 0 0.85rem; border-radius: var(--r-sm); font-weight: 600; }
+
+    /* ─── Main content ─── */
     .main {
-      max-width: 980px;
-      margin: 0 auto;
+      max-width: 1000px;
+      margin: 1.25rem auto;
+      padding: 0 1rem 3rem;
       display: flex;
       flex-direction: column;
-      gap: 1.25rem;
+      gap: 0.9rem;
     }
 
     /* ─── Now bar ─── */
     .now-bar {
-      border-radius: 10px;
+      border-radius: var(--r);
       padding: 0.75rem 1.1rem;
-      font-size: 0.9rem;
+      font-size: 0.875rem;
       display: flex;
       align-items: center;
       gap: 0.6rem;
       flex-wrap: wrap;
+      line-height: 1.4;
     }
-    .now-bar-active {
-      background: #d1fae5;
-      color: #064e3b;
-      border: 1px solid #6ee7b7;
-    }
-    .now-bar-idle {
-      background: #f1f5f9;
-      color: #475569;
-      border: 1px solid #e2e8f0;
-    }
+    .now-bar-active { background: var(--green-pale); color: #064e3b; border: 1px solid #6ee7b7; }
+    .now-bar-idle   { background: var(--surface);    color: var(--text-2); border: 1px solid var(--border); }
+
     .now-dot {
       width: 10px; height: 10px;
       border-radius: 50%;
       flex-shrink: 0;
     }
-    .now-bar-active .now-dot { background: #10b981; box-shadow: 0 0 0 3px #a7f3d0; }
-    .now-bar-idle   .now-dot { background: #94a3b8; }
-    .now-pool-tag {
-      font-weight: 600;
+    .now-bar-active .now-dot {
+      background: var(--green);
+      animation: pulse-dot 2s ease-in-out infinite;
     }
-    .now-until { font-weight: 400; opacity: 0.8; }
-    .now-sep { opacity: 0.4; }
-    .now-next { font-style: italic; opacity: 0.75; }
+    .now-bar-idle .now-dot { background: var(--text-3); }
+
+    @keyframes pulse-dot {
+      0%, 100% { box-shadow: 0 0 0 3px #a7f3d0; }
+      50%       { box-shadow: 0 0 0 6px #d1fae5; }
+    }
+
+    .now-pool-tag { font-weight: 700; }
+    .now-until    { opacity: 0.85; }
+    .now-sep      { opacity: 0.35; }
+    .now-next     { font-style: italic; opacity: 0.8; }
 
     /* ─── Filter bar ─── */
     .filter-bar {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 0.4rem;
       flex-wrap: wrap;
     }
     .filter-label {
-      font-size: 0.82rem;
-      color: #64748b;
-      font-weight: 500;
-      margin-right: 0.1rem;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--text-3);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
     }
     .filter-btn {
-      display: flex;
+      display: inline-flex;
       align-items: center;
       gap: 0.35rem;
-      padding: 0.3rem 0.75rem;
+      padding: 0.28rem 0.75rem;
       border-radius: 99px;
-      border: 2px solid transparent;
-      background: #fff;
+      border: 2px solid;
+      background: var(--surface);
       cursor: pointer;
-      font-size: 0.82rem;
-      font-weight: 600;
-      transition: opacity 0.15s, background 0.15s;
+      font-family: inherit;
+      font-size: 0.78rem;
+      font-weight: 700;
+      transition: opacity 0.15s, box-shadow 0.15s;
+      box-shadow: var(--shadow-sm);
     }
-    .filter-btn .filter-swatch {
-      width: 8px; height: 8px;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
-    .filter-btn.off {
-      opacity: 0.4;
-      text-decoration: line-through;
-    }
+    .filter-btn:hover       { box-shadow: var(--shadow); }
+    .filter-btn:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+    .filter-btn .swatch     { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .filter-btn.off         { opacity: 0.3; box-shadow: none; text-decoration: line-through; }
 
     /* ─── Calendar ─── */
     .cal-wrap {
-      background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 1px 6px rgba(0,0,0,0.09);
-      overflow: hidden;
+      background: var(--surface);
+      border-radius: var(--r-lg);
+      box-shadow: var(--shadow);
+      overflow-x: auto;               /* horizontal scroll on small screens */
+      border: 1px solid var(--border);
     }
+    .cal-inner  { min-width: 420px; } /* prevent columns collapsing too narrow */
 
-    .cal-headers { display: flex; border-bottom: 2px solid #e2e8f0; }
-    .cal-gutter-head { flex-shrink: 0; background: #f8fafc; }
+    .cal-headers { display: flex; border-bottom: 2px solid var(--border-2); }
+    .cal-gutter-head { flex-shrink: 0; background: var(--surface-2); }
     .cal-col-head {
       flex: 1;
-      padding: 0.65rem 0.5rem 0.55rem;
+      padding: 0.7rem 0.5rem 0.6rem;
       text-align: center;
-      border-left: 1px solid #e2e8f0;
-      background: #f8fafc;
+      border-left: 1px solid var(--border);
+      background: var(--surface-2);
       min-width: 0;
     }
     .cal-col-head a {
-      font-size: 0.83rem;
-      font-weight: 600;
-      color: #1e40af;
+      font-size: 0.82rem;
+      font-weight: 700;
       text-decoration: none;
       display: block;
-      margin-bottom: 4px;
+      margin-bottom: 5px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -157,88 +237,114 @@
     .cal-col-head a:hover { text-decoration: underline; }
 
     .cal-body { display: flex; }
-    .cal-time-col { flex-shrink: 0; position: relative; }
+    .cal-time-col {
+      flex-shrink: 0;
+      position: relative;
+      background: var(--surface-2);
+      border-right: 1px solid var(--border-2);
+    }
     .cal-hour-label {
       position: absolute;
-      right: 6px;
-      font-size: 0.65rem;
-      color: #a0aec0;
+      right: 8px;
+      font-size: 0.61rem;
+      font-weight: 600;
+      color: var(--text-3);
       transform: translateY(-50%);
       user-select: none;
+      letter-spacing: 0.02em;
     }
 
-    .cal-pools { flex: 1; display: flex; position: relative; }
-    .cal-pool-col { flex: 1; position: relative; border-left: 1px solid #e2e8f0; min-width: 0; }
+    .cal-pools    { flex: 1; display: flex; position: relative; }
+    .cal-pool-col { flex: 1; position: relative; border-left: 1px solid var(--border); min-width: 0; }
 
     .cal-hline { position: absolute; left: 0; right: 0; pointer-events: none; }
-    .cal-hline.full { border-top: 1px solid #e8edf3; }
-    .cal-hline.half { border-top: 1px dashed #f0f4f8; }
+    .cal-hline.full { border-top: 1px solid #edf1f7; }
+    .cal-hline.half { border-top: 1px dashed #f3f6fa;  }
 
     .cal-slot {
       position: absolute;
-      left: 4px; right: 4px;
-      border-radius: 5px;
+      left: 3px; right: 3px;
+      border-radius: 6px;
       color: #fff;
-      font-size: 0.68rem;
-      padding: 3px 5px;
+      font-size: 0.67rem;
+      padding: 4px 6px;
       overflow: hidden;
       cursor: default;
-      transition: filter 0.15s;
+      transition: filter 0.12s, box-shadow 0.12s;
+      box-shadow: 0 1px 3px rgba(0,0,0,.20), 0 1px 2px rgba(0,0,0,.10);
     }
-    .cal-slot:hover { filter: brightness(1.1); }
-    .cal-slot .slot-label { font-weight: 600; white-space: nowrap; }
-    .cal-slot .slot-sub   { opacity: 0.82; font-size: 0.62rem; }
-
-    /* Fallback slots get a hatched appearance */
-    .cal-slot.fallback { opacity: 0.7; }
+    .cal-slot:hover {
+      filter: brightness(1.1);
+      box-shadow: 0 4px 10px rgba(0,0,0,.25);
+      z-index: 2;
+    }
+    .cal-slot .sl-time { font-weight: 700; white-space: nowrap; display: block; }
+    .cal-slot .sl-dur  { opacity: 0.82; font-size: 0.61rem; display: block; margin-top: 1px; }
+    .cal-slot.fallback { opacity: 0.65; }
 
     /* Current-time red line */
     .cal-now {
       position: absolute;
       left: 0; right: 0;
-      border-top: 2px solid #ef4444;
       pointer-events: none;
       z-index: 5;
+    }
+    .cal-now::after {
+      content: "";
+      display: block;
+      border-top: 2px solid var(--red);
     }
     .cal-now::before {
       content: "";
       position: absolute;
-      left: -4px; top: -4px;
-      width: 8px; height: 8px;
+      left: 0; top: -3px;
+      width: 6px; height: 6px;
       border-radius: 50%;
-      background: #ef4444;
+      background: var(--red);
     }
 
     /* ─── Badges ─── */
     .badge {
-      font-size: 0.65rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      font-size: 0.6rem;
       font-weight: 700;
-      padding: 0.15rem 0.45rem;
+      padding: 0.13rem 0.42rem;
       border-radius: 99px;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.07em;
       white-space: nowrap;
     }
-    .badge-live        { background: #d1fae5; color: #065f46; }
-    .badge-fallback    { background: #fef3c7; color: #78350f; }
-    .badge-unavailable { background: #fee2e2; color: #7f1d1d; }
+    .badge::before {
+      content: "";
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .badge-live        { background: var(--green-pale); color: #065f46; }
+    .badge-live::before        { background: var(--green); }
+    .badge-fallback    { background: var(--amber-pale); color: #78350f; }
+    .badge-fallback::before    { background: var(--amber); }
+    .badge-unavailable { background: var(--red-pale);   color: #7f1d1d; }
+    .badge-unavailable::before { background: var(--red); }
 
     /* ─── Cards ─── */
     #cards {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 1rem;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 0.75rem;
     }
-
     .card {
-      background: #fff;
-      border-radius: 10px;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.09);
-      padding: 1rem 1.15rem;
+      background: var(--surface);
+      border-radius: var(--r);
+      box-shadow: var(--shadow-sm);
+      padding: 0.9rem 1rem;
       display: flex;
       flex-direction: column;
-      gap: 0.55rem;
-      border-top: 3px solid transparent;
+      gap: 0.5rem;
+      border: 1px solid var(--border);
+      border-left: 3px solid transparent;
     }
     .card-header {
       display: flex;
@@ -247,57 +353,107 @@
       gap: 0.5rem;
     }
     .card-header a {
-      font-size: 0.95rem;
-      font-weight: 600;
-      color: #1e3a8a;
+      font-size: 0.88rem;
+      font-weight: 700;
       text-decoration: none;
     }
     .card-header a:hover { text-decoration: underline; }
 
-    .slots { list-style: none; display: flex; flex-direction: column; gap: 0.28rem; }
-    .slots li { font-size: 0.88rem; font-variant-numeric: tabular-nums; color: #374151; }
-    .slots li::before { content: "✓ "; color: #10b981; }
+    .slots { list-style: none; display: flex; flex-direction: column; gap: 0.2rem; }
+    .slots li {
+      font-size: 0.83rem;
+      font-variant-numeric: tabular-nums;
+      color: var(--text-2);
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .slot-dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: currentColor;
+      opacity: 0.4;
+      flex-shrink: 0;
+    }
+    .no-slots { font-size: 0.81rem; color: var(--text-3); font-style: italic; }
 
-    .no-slots { font-size: 0.86rem; color: #9ca3af; font-style: italic; }
+    /* ─── Loading / error ─── */
+    .loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 4rem 2rem;
+      color: var(--text-3);
+      font-size: 0.9rem;
+    }
+    .spinner {
+      width: 28px; height: 28px;
+      border: 3px solid var(--border-2);
+      border-top-color: var(--blue);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .error { text-align: center; color: var(--red); font-size: 0.9rem; padding: 2rem; }
 
-    .loading { text-align: center; color: #9ca3af; font-size: 1rem; padding: 3rem; }
-    .error   { text-align: center; color: #dc2626; font-size: 0.95rem; padding: 2rem; }
+    /* ─── Responsive ─── */
+    @media (max-width: 640px) {
+      .app-bar { padding: 0.75rem 1rem; }
+      .app-title h1 { font-size: 0.95rem; }
+      #date-label { min-width: 0; font-size: 0.8rem; order: 3; flex-basis: 100%; }
+      #cards { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 400px) {
+      #cards { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
-  <header>
-    <h1>Amsterdam Lane Swimming</h1>
-    <div class="nav">
-      <button id="btn-prev">← Prev</button>
-      <button id="btn-today">Today</button>
-      <button id="btn-next">Next →</button>
-      <span id="date-label"></span>
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <header class="app-bar">
+    <div class="app-bar-inner">
+      <div class="app-title">
+        <span class="app-title-icon" aria-hidden="true">🏊</span>
+        <h1>Swimfinder</h1>
+      </div>
+      <nav class="date-nav" aria-label="Navigate by date">
+        <button class="btn btn-icon" id="btn-prev" aria-label="Previous day" title="Previous day">←</button>
+        <span id="date-label" aria-live="polite" aria-atomic="true"></span>
+        <button class="btn btn-icon" id="btn-next" aria-label="Next day" title="Next day">→</button>
+        <button class="btn btn-text" id="btn-today">Today</button>
+      </nav>
     </div>
   </header>
 
-  <div class="main">
-    <div id="now-bar" hidden></div>
-    <div id="filter-bar" class="filter-bar" hidden></div>
-    <div class="cal-wrap" id="cal-wrap"><p class="loading">Loading…</p></div>
+  <main class="main" id="main-content">
+    <div id="now-bar" hidden role="status" aria-live="polite"></div>
+    <div id="filter-bar" class="filter-bar" hidden role="group" aria-label="Filter by pool"></div>
+    <div class="cal-wrap" id="cal-wrap" role="region" aria-label="Lane swimming schedule">
+      <div class="loading">
+        <div class="spinner" aria-hidden="true"></div>
+        Loading schedules…
+      </div>
+    </div>
     <div id="cards"></div>
-  </div>
+  </main>
 
   <script>
   (function () {
-    var HOUR_START  = 6;
-    var HOUR_END    = 22;
-    var HOUR_PX     = 58;
-    var GUTTER_PX   = 44;
-    var TOTAL_H     = (HOUR_END - HOUR_START) * HOUR_PX;
+    var HOUR_START = 6;
+    var HOUR_END   = 22;
+    var HOUR_PX    = 60;
+    var GUTTER_PX  = 46;
+    var TOTAL_H    = (HOUR_END - HOUR_START) * HOUR_PX;
 
-    // Per-pool accent colors (index matches POOLS order in app.py)
-    var POOL_COLORS = ["#2563eb", "#7c3aed", "#0891b2", "#16a34a"];
+    var POOL_COLORS = ["#1d4ed8", "#7c3aed", "#0891b2", "#16a34a"];
 
     var currentDate = new Date();
     currentDate.setHours(0, 0, 0, 0);
 
-    var filteredOut = {};   // poolName -> true when hidden
-    var lastData    = null; // cached last API response
+    var filteredOut = {};
+    var lastData    = null;
 
     /* ── Utilities ── */
     function isoDate(d) {
@@ -313,7 +469,9 @@
     }
 
     function esc(s) {
-      return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+      return String(s)
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
     }
 
     function toMin(hhmm) {
@@ -328,6 +486,7 @@
     function badgeCls(src) {
       return "badge badge-" + (src === "live" || src === "fallback" ? src : "unavailable");
     }
+
     function badgeTxt(src) {
       return src === "live" ? "live" : src === "fallback" ? "fallback" : "unavailable";
     }
@@ -336,19 +495,25 @@
       return POOL_COLORS[idx % POOL_COLORS.length];
     }
 
+    function isToday() {
+      return isoDate(currentDate) === isoDate(new Date());
+    }
+
+    function fmtDur(startMin, endMin) {
+      var m = endMin - startMin;
+      if (m % 60 === 0) return (m / 60) + "h";
+      if (m >= 60) return Math.floor(m / 60) + "h" + (m % 60) + "m";
+      return m + "m";
+    }
+
     /* ── Now bar ── */
     function buildNowBar(pools) {
       var bar = document.getElementById("now-bar");
-      if (isoDate(currentDate) !== isoDate(new Date())) {
-        bar.hidden = true;
-        return;
-      }
+      if (!isToday()) { bar.hidden = true; return; }
 
       var now    = new Date();
       var nowMin = now.getHours() * 60 + now.getMinutes();
-
-      var active   = [];
-      var upcoming = [];
+      var active = [], upcoming = [];
 
       pools.forEach(function (pool, idx) {
         pool.slots.forEach(function (slot) {
@@ -365,24 +530,26 @@
       var html;
       if (active.length > 0) {
         bar.className = "now-bar now-bar-active";
-        html = '<span class="now-dot"></span><strong>Lane swimming open now:&nbsp;</strong>';
+        html = '<span class="now-dot" aria-hidden="true"></span>'
+             + '<strong>Open for lane swimming:&nbsp;</strong>';
         html += active.map(function (a) {
           var c = colorFor(a.idx);
           return '<span class="now-pool-tag" style="color:' + c + '">' + esc(a.pool.name) + '</span>'
                + '<span class="now-until"> until ' + esc(a.slot.end) + '</span>';
-        }).join('<span class="now-sep"> &nbsp;·&nbsp; </span>');
+        }).join('<span class="now-sep" aria-hidden="true">&nbsp;·&nbsp;</span>');
       } else {
         bar.className = "now-bar now-bar-idle";
-        html = '<span class="now-dot"></span><strong>No lane swimming right now</strong>';
+        html = '<span class="now-dot" aria-hidden="true"></span>'
+             + '<strong>No lane swimming right now</strong>';
         if (upcoming.length > 0) {
           var nx = upcoming[0];
           var c  = colorFor(nx.idx);
-          html += ' &nbsp;·&nbsp; <span class="now-next">Next: '
-                + '<span style="color:' + c + ';font-weight:600">' + esc(nx.pool.name) + '</span>'
+          html += '<span class="now-sep" aria-hidden="true">&nbsp;·&nbsp;</span>'
+                + '<span class="now-next">Next: '
+                + '<span style="color:' + c + ';font-weight:700">' + esc(nx.pool.name) + '</span>'
                 + ' at ' + esc(nx.slot.start) + '</span>';
         }
       }
-
       bar.innerHTML = html;
       bar.hidden = false;
     }
@@ -390,12 +557,15 @@
     /* ── Filter bar ── */
     function buildFilterBar(pools) {
       var bar = document.getElementById("filter-bar");
-
       var html = '<span class="filter-label">Show:</span>';
       pools.forEach(function (pool, idx) {
-        var c = colorFor(idx);
-        html += '<button class="filter-btn" data-filter-pool="' + esc(pool.name) + '" style="border-color:' + c + ';color:' + c + '">'
-              + '<span class="filter-swatch" style="background:' + c + '"></span>'
+        var c   = colorFor(idx);
+        var off = filteredOut[pool.name] ? " off" : "";
+        html += '<button class="filter-btn' + off + '"'
+              + ' data-filter-pool="' + esc(pool.name) + '"'
+              + ' style="border-color:' + c + ';color:' + c + '"'
+              + ' aria-pressed="' + (filteredOut[pool.name] ? "false" : "true") + '">'
+              + '<span class="swatch" style="background:' + c + '" aria-hidden="true"></span>'
               + esc(pool.name)
               + '</button>';
       });
@@ -403,15 +573,14 @@
       bar.hidden = false;
 
       bar.querySelectorAll(".filter-btn").forEach(function (btn) {
-        // Restore prior state if pool already had a filter
-        if (filteredOut[btn.dataset.filterPool]) btn.classList.add("off");
-
         btn.addEventListener("click", function () {
           var name = btn.dataset.filterPool;
           if (filteredOut[name]) {
             delete filteredOut[name];
+            btn.setAttribute("aria-pressed", "true");
           } else {
             filteredOut[name] = true;
+            btn.setAttribute("aria-pressed", "false");
           }
           btn.classList.toggle("off");
           applyFilters();
@@ -422,7 +591,6 @@
     }
 
     function applyFilters() {
-      // Calendar header cells and body columns share data-pool attribute
       document.querySelectorAll("[data-pool]").forEach(function (el) {
         el.style.display = filteredOut[el.dataset.pool] ? "none" : "";
       });
@@ -430,13 +598,14 @@
 
     /* ── Calendar ── */
     function buildCalendar(pools) {
-      // Headers
+      // Header row
       var hdr = '<div class="cal-headers">'
         + '<div class="cal-gutter-head" style="width:' + GUTTER_PX + 'px"></div>';
       pools.forEach(function (pool, idx) {
         var c = colorFor(idx);
         hdr += '<div class="cal-col-head" data-pool="' + esc(pool.name) + '">'
-             + '<a href="' + esc(pool.url) + '" target="_blank" rel="noopener" style="color:' + c + '">' + esc(pool.name) + '</a>'
+             + '<a href="' + esc(pool.url) + '" target="_blank" rel="noopener" style="color:' + c + '">'
+             + esc(pool.name) + '</a>'
              + '<span class="' + badgeCls(pool.source) + '">' + badgeTxt(pool.source) + '</span>'
              + '</div>';
       });
@@ -452,9 +621,10 @@
       gutter += '</div>';
 
       // Pool columns
+      var nowPx = null;
       var poolsDiv = '<div class="cal-pools" style="height:' + TOTAL_H + 'px">';
       pools.forEach(function (pool, idx) {
-        var c = colorFor(idx);
+        var c   = colorFor(idx);
         var col = '<div class="cal-pool-col" data-pool="' + esc(pool.name) + '">';
 
         // Grid lines
@@ -468,17 +638,19 @@
 
         // Swim slots
         pool.slots.forEach(function (slot) {
-          var startMin = toMin(slot.start);
-          var endMin   = toMin(slot.end);
-          var top    = toPx(startMin);
-          var height = Math.max(((endMin - startMin) / 60) * HOUR_PX, 22);
-          var durH   = ((endMin - startMin) / 60).toFixed(1).replace(/\.0$/, "") + "h";
+          var sMin   = toMin(slot.start);
+          var eMin   = toMin(slot.end);
+          var top    = toPx(sMin);
+          var height = Math.max(((eMin - sMin) / 60) * HOUR_PX, 20);
+          var dur    = fmtDur(sMin, eMin);
           var fb     = pool.source !== "live" ? " fallback" : "";
-          col += '<div class="cal-slot' + fb + '" style="top:' + top + 'px;height:' + height + 'px;background:' + c + '"'
-               + ' title="' + esc(pool.name) + ' ' + esc(slot.start) + '–' + esc(slot.end) + '">'
-               + '<span class="slot-label">' + esc(slot.start) + '–' + esc(slot.end) + '</span>';
-          if (height >= 36) {
-            col += '<span class="slot-sub">' + durH + '</span>';
+          var lbl    = esc(pool.name) + " " + esc(slot.start) + "–" + esc(slot.end);
+          col += '<div class="cal-slot' + fb + '"'
+               + ' style="top:' + top + 'px;height:' + height + 'px;background:' + c + '"'
+               + ' title="' + lbl + '" aria-label="' + lbl + '">'
+               + '<span class="sl-time">' + esc(slot.start) + '–' + esc(slot.end) + '</span>';
+          if (height >= 34) {
+            col += '<span class="sl-dur">' + dur + '</span>';
           }
           col += '</div>';
         });
@@ -488,17 +660,30 @@
       });
 
       // Current-time indicator (today only)
-      if (isoDate(currentDate) === isoDate(new Date())) {
-        var now   = new Date();
-        var nowPx = toPx(now.getHours() * 60 + now.getMinutes());
+      if (isToday()) {
+        var now = new Date();
+        nowPx = toPx(now.getHours() * 60 + now.getMinutes());
         if (nowPx >= 0 && nowPx <= TOTAL_H) {
-          poolsDiv += '<div class="cal-now" style="top:' + nowPx + 'px"></div>';
+          poolsDiv += '<div class="cal-now" style="top:' + nowPx + 'px" aria-hidden="true"></div>';
         }
       }
-
       poolsDiv += '</div>';
+
       document.getElementById("cal-wrap").innerHTML =
-        hdr + '<div class="cal-body">' + gutter + poolsDiv + '</div>';
+        '<div class="cal-inner">'
+        + hdr
+        + '<div class="cal-body">' + gutter + poolsDiv + '</div>'
+        + '</div>';
+
+      // Scroll the now-line into view
+      if (nowPx !== null) {
+        var nowEl = document.querySelector(".cal-now");
+        if (nowEl) {
+          setTimeout(function () {
+            nowEl.scrollIntoView({ behavior: "smooth", block: "center" });
+          }, 80);
+        }
+      }
     }
 
     /* ── Cards ── */
@@ -508,11 +693,12 @@
         var c = colorFor(idx);
         var slotsHtml = pool.slots.length
           ? '<ul class="slots">' + pool.slots.map(function (s) {
-              return "<li>" + esc(s.start) + " – " + esc(s.end) + "</li>";
+              return '<li><span class="slot-dot" aria-hidden="true"></span>'
+                   + esc(s.start) + " – " + esc(s.end) + "</li>";
             }).join("") + "</ul>"
           : '<p class="no-slots">No lane swimming today</p>';
 
-        html += '<div class="card" data-pool="' + esc(pool.name) + '" style="border-top-color:' + c + '">'
+        html += '<div class="card" data-pool="' + esc(pool.name) + '" style="border-left-color:' + c + '">'
               + '<div class="card-header">'
               +   '<a href="' + esc(pool.url) + '" target="_blank" rel="noopener" style="color:' + c + '">' + esc(pool.name) + '</a>'
               +   '<span class="' + badgeCls(pool.source) + '">' + badgeTxt(pool.source) + '</span>'
@@ -523,16 +709,17 @@
       document.getElementById("cards").innerHTML = html;
     }
 
-    /* ── Helpers ── */
+    /* ── States ── */
     function renderLoading() {
-      document.getElementById("cal-wrap").innerHTML = '<p class="loading">Loading schedules…</p>';
+      document.getElementById("cal-wrap").innerHTML =
+        '<div class="loading"><div class="spinner" aria-hidden="true"></div>Loading schedules…</div>';
       document.getElementById("cards").innerHTML = "";
       document.getElementById("now-bar").hidden = true;
       document.getElementById("filter-bar").hidden = true;
     }
 
     function renderError(msg) {
-      document.getElementById("cal-wrap").innerHTML = '<p class="error">Error: ' + esc(msg) + '</p>';
+      document.getElementById("cal-wrap").innerHTML = '<p class="error">⚠ ' + esc(msg) + '</p>';
       document.getElementById("cards").innerHTML = "";
       document.getElementById("now-bar").hidden = true;
     }
